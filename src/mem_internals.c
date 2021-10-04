@@ -15,9 +15,13 @@ unsigned long knuth_mmix_one_round(unsigned long in)
     return in * 6364136223846793005UL % 1442695040888963407UL;
 }
 
+/* Fonction permettant d'écrire le marquage dans les 16 premiers et les 16 derniers octets du bloc pointé par ptr et
+d’une longueur de size octets. Elle renvoie l’adresse de la zone utilisable par l’utilisateur,
+16 octets après ptr. */
+
 void *mark_memarea_and_get_user_ptr(void *ptr, unsigned long size, MemKind k)
 {
-    /* ecrire votre code ici */
+    
     return (void *)0;
 }
 
