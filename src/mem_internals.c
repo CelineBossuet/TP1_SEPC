@@ -21,15 +21,29 @@ d’une longueur de size octets. Elle renvoie l’adresse de la zone utilisable 
 
 void *mark_memarea_and_get_user_ptr(void *ptr, unsigned long size, MemKind k)
 {
+    /* ecrire votre code ici */
+    unsigned long mark=knuth_mmix_one_round( (unsigned long)ptr);
+    unsigned long magic = (mark & ~(0b11UL)) | k; 
     
-    return (void *)0;
+    *(unsigned  long *)ptr = size;
+    *(unsigned long*)(ptr +8)=magic;
+    *(unsigned long*)(ptr + size -8)=size;
+    *(unsigned long*)(ptr + size -16)=magic;
+
+    return (void *)(ptr +16);
 }
 
 Alloc
 mark_check_and_get_alloc(void *ptr)
 {
     /* ecrire votre code ici */
-    Alloc a = {};
+    unsigned long taille1 = *(unsigned  long *)(ptr -16);
+    unsigned long mark1 = *(unsigned  long *)(ptr -8);
+    unsigned long taille2 = *(unsigned  long *)(ptr + taille1-24);
+    unsigned long mark2 = *(unsigned  long *)(ptr + taille1 -32);
+    assert(taille1==taille2 && mark1==mark2);
+    
+    Alloc a = {(void*)(ptr -16), mark1 & 0b11UL, taille1};
     return a;
 }
 
