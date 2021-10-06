@@ -38,12 +38,13 @@ mark_check_and_get_alloc(void *ptr)
 {
     /* ecrire votre code ici */
     unsigned long taille1 = *(unsigned  long *)(ptr -16);
-    unsigned long mark1 = *(unsigned  long *)(ptr -8);
+    unsigned long magic1 = *(unsigned  long *)(ptr -8);
     unsigned long taille2 = *(unsigned  long *)(ptr + taille1-24);
-    unsigned long mark2 = *(unsigned  long *)(ptr + taille1 -32);
-    assert(taille1==taille2 && mark1==mark2);
+    unsigned long magic2 = *(unsigned  long *)(ptr + taille1 -32);
+    assert(taille1==taille2);
+    assert(magic1==magic2);
     
-    Alloc a = {(void*)(ptr -16), mark1 & 0b11UL, taille1};
+    Alloc a = {(void*)(ptr -16), magic1 & 0b11UL, taille1};
     return a;
 }
 

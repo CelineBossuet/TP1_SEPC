@@ -21,12 +21,22 @@ void *
 emalloc_small(unsigned long size)
 {
     if (arena.chunkpool == NULL){
-        mem_realloc_small();
+        unsigned long taille = mem_realloc_small();
+        void *ptr =arena.chunkpool; //adr du block
+        for (int i=0; i<taille; i+=CHUNKSIZE){ //on découpe notre block en petits de taille CHUNKSIZE
+            *(void **)ptr = (ptr + CHUNKSIZE); //on ecrit l'adresse du suivant 
+            ptr+= CHUNKSIZE; //on avance au prochain Chunk
+
+        }
+        ptr-=CHUNKSIZE; //revient en arrière pour etre au dernier élement
+        
+        *(void **)ptr= 0; //point vers 0 la fin de liste
     }
 
     void * ptr_head = arena.chunkpool;
     void * ptr_mem = mark_memarea_and_get_user_ptr(ptr_head, CHUNKSIZE,SMALL_KIND);
-    arena.chunkpool += CHUNKSIZE;
+    
+    arena.chunkpool =*(void **)ptr_head;
 
     return (void *) ptr_mem;
 }
@@ -37,5 +47,7 @@ emalloc_small(unsigned long size)
 */
 
 void efree_small(Alloc a) {
-    arena.chunkpool = a.ptr;
+    void **adr=a.ptr;
+    *adr=arena.chunkpool; //on écrit l'adresse du prochain chunk
+    arena.chunkpool = a.ptr; //on mets le chink au début
 }

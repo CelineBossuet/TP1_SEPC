@@ -28,6 +28,7 @@ void * division_block_recursif(unsigned int taille_block)
 {
     if (taille_block >= arena.medium_next_exponant + FIRST_ALLOC_MEDIUM_EXPOSANT){
         mem_realloc_medium();
+        
     }
     void * ptr = arena.TZL[taille_block];
     if (ptr != NULL){ // On a trouvé un bloc à découper
@@ -52,13 +53,14 @@ emalloc_medium(unsigned long size)
     size +=32; //taille entière
     unsigned int taille_optimale = puiss2(size);
     void * ptr = division_block_recursif(taille_optimale);
+    arena.TZL[taille_optimale] = *(void **)ptr;
     return mark_memarea_and_get_user_ptr(ptr, taille_optimale, MEDIUM_KIND);
 }
 
 
 
 /*
-Par le même principe, on va récursivement remonté la pile des buddy jusqu'à ne plus en trouvé
+Par le même principe, on va récursivement remonter la pile des buddy jusqu'à ne plus en trouvé
 */
 
 void remonter_buddy(void * ptr, unsigned int taille_block){
