@@ -22,23 +22,21 @@ emalloc_small(unsigned long size)
 {
     if (arena.chunkpool == NULL){
         unsigned long taille = mem_realloc_small();
-        void *ptr =arena.chunkpool; //adr du block
+        void ** ptr =arena.chunkpool; //adr du block
         for (int i=0; i<taille; i+=CHUNKSIZE){ //on découpe notre block en petits de taille CHUNKSIZE
-            *(void **)ptr = (ptr + CHUNKSIZE); //on ecrit l'adresse du suivant 
-            ptr+= CHUNKSIZE; //on avance au prochain Chunk
+            *ptr = (void *)(ptr + CHUNKSIZE/8); //on ecrit l'adresse du suivant 
+            ptr=*ptr; //on avance au prochain pointeur 
 
         }
-        ptr-=CHUNKSIZE; //revient en arrière pour etre au dernier élement
         
-        *(void **)ptr= 0; //point vers 0 la fin de liste
     }
-
-    void * ptr_head = arena.chunkpool;
-    void * ptr_mem = mark_memarea_and_get_user_ptr(ptr_head, CHUNKSIZE,SMALL_KIND);
+    void ** ptr_head = arena.chunkpool;
+    ptr_head = *ptr_head;
+    void * ptr_mem = mark_memarea_and_get_user_ptr(arena.chunkpool, CHUNKSIZE,SMALL_KIND);
     
-    arena.chunkpool =*(void **)ptr_head;
+    arena.chunkpool =ptr_head;
 
-    return (void *) ptr_mem;
+    return ptr_mem;
 }
 
 /*
@@ -47,11 +45,7 @@ emalloc_small(unsigned long size)
 */
 
 void efree_small(Alloc a) {
-    void ** chunk = arena.chunkpool;
     void **adr=a.ptr;
     *adr=arena.chunkpool; //on écrit l'adresse du prochain chunk
-    void ** new_chunk;
-    arena.chunkpool = a.ptr; //on mets le chink au début
-    new_chunk=arena.chunkpool; //on reréférence le début du chunck
-    *new_chunk = chunk;
+    arena.chunkpool = a.ptr; //on mets le chunk au début
 }
