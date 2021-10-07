@@ -47,7 +47,11 @@ emalloc_small(unsigned long size)
 */
 
 void efree_small(Alloc a) {
+    void ** chunk = arena.chunkpool;
     void **adr=a.ptr;
     *adr=arena.chunkpool; //on écrit l'adresse du prochain chunk
+    void ** new_chunk;
     arena.chunkpool = a.ptr; //on mets le chink au début
+    new_chunk=arena.chunkpool; //on reréférence le début du chunck
+    *new_chunk = chunk;
 }

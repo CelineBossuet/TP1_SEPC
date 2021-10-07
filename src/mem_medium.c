@@ -42,7 +42,6 @@ void * division_block_recursif(unsigned int taille_block)
         return block_a_decouper;
     }
 
-
 }
 
 void *
@@ -53,8 +52,7 @@ emalloc_medium(unsigned long size)
     size +=32; //taille entière
     unsigned int taille_optimale = puiss2(size);
     void * ptr = division_block_recursif(taille_optimale);
-    arena.TZL[taille_optimale] = *(void **)ptr;
-    return mark_memarea_and_get_user_ptr(ptr, taille_optimale, MEDIUM_KIND);
+    return mark_memarea_and_get_user_ptr(ptr, 1 << taille_optimale, MEDIUM_KIND);
 }
 
 
