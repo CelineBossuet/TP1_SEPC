@@ -21,29 +21,39 @@ d’une longueur de size octets. Elle renvoie l’adresse de la zone utilisable 
 
 void *mark_memarea_and_get_user_ptr(void *ptr, unsigned long size, MemKind k)
 {
-    /* ecrire votre code ici */
-    unsigned long mark=knuth_mmix_one_round( (unsigned long)ptr);
-    unsigned long magic = (mark & ~(0b11UL)) | k; 
-    
-    *(unsigned  long *)ptr = size;
+    unsigned long mark=knuth_mmix_one_round( (unsigned long)ptr); // On crée et on stock le nombre magique en castant le pointeur
+    unsigned long magic = (mark & ~(0b11UL)) | k; //On défini les 2 derniers bits de magic grâce au Memkind
+
+    /* On initialise les extrémités de la zone mémoire allouée en respectant l'arithmétique des pointeurs */
+    *(unsigned  long *)ptr = size;  
     *(unsigned long*)(ptr +8)=magic;
     *(unsigned long*)(ptr + size -8)=size;
     *(unsigned long*)(ptr + size -16)=magic;
 
+    /* On renvoie le pointeur pointant sur le début de la mémoire où l'utilisateur veut stocker ses données*/
     return (void *)(ptr +16);
 }
+
+/* 
+Ce programme permet de lire le marquage avant ptr, puis on renvoie les valeurs lues dans une structure alloc.
+On vérifie au fur et à mesure la cohérence des données des marques pour ne pas se retrouver avec une allocation 
+bugué.
+*/
 
 Alloc
 mark_check_and_get_alloc(void *ptr)
 {
-    /* ecrire votre code ici */
+    /*On récupère les données des marques en respectant l'arithmétique des pointeurs*/
     unsigned long taille1 = *(unsigned  long *)(ptr -16);
     unsigned long magic1 = *(unsigned  long *)(ptr -8);
     unsigned long taille2 = *(unsigned  long *)(ptr + taille1-24);
     unsigned long magic2 = *(unsigned  long *)(ptr + taille1 -32);
+
+    /* On fait le test d'assertion des bonnes valeurs des marques*/
     assert(taille1==taille2);
     assert(magic1==magic2);
     
+    /* On crée un structure alloc en remplissant les bonnes valeurs à l'intérieur et on la retourne*/
     Alloc a = {(void*)(ptr -16), magic1 & 0b11UL, taille1};
     return a;
 }
