@@ -22,7 +22,7 @@ emalloc_small(unsigned long size)
     /* Si il n'y a pas de chunck disponible dans le chunckpool, on doit réalloué de la mémoire*/
     if (arena.chunkpool == NULL){
         unsigned long taille = mem_realloc_small();
-        void ** ptr =arena.chunkpool; //adr du block
+        void ** ptr =arena.chunkpool; //adresse du block
         for (int i=0; i<taille; i+=CHUNKSIZE){ //on découpe notre block en petits de taille CHUNKSIZE
             *ptr = (void *)(ptr + CHUNKSIZE/8); //on ecrit l'adresse du suivant 
             ptr=*ptr; //on avance au prochain pointeur 

@@ -39,9 +39,10 @@ void * division_block_recursif(unsigned int taille_block)
         return ptr; // On retourne le pointeur du bloc à découper 
     }else{
         void * block_a_decouper = division_block_recursif( taille_block + 1); // On a dans tous les cas un bloc à découper
-        void * buddy = (void *)((uintptr_t)block_a_decouper ^ (1 << taille_block)); // On crée l'appariement
+        void * buddy = (void *)((uintptr_t)block_a_decouper ^ (1 << taille_block)); // On trouve l'adresse de buddy
         arena.TZL[taille_block] = buddy; //Comme il n'y avait pas de bloc de cette taille, buddy devient le seul en présence
-        *(void **)buddy = NULL; //Comme il est seul, il n'y a pas de suivant à buddy
+        void ** adr_buddy=buddy;
+        *adr_buddy = (void *)NULL; //Comme il est seul, on écrit rien à son adresse
         return block_a_decouper; //On récupère le bon pointeur du bloc une fois découpé
     }
 
@@ -67,23 +68,26 @@ emalloc_medium(unsigned long size)
 
 
 /*
-Par le même principe, on va récursivement remonter la pile des buddy jusqu'à ne plus en trouvé
+Par le même principe, on va récursivement remonter la pile des buddy 
+jusqu'à ne plus en trouver
 */
 
 void remonter_buddy(void * ptr, unsigned int taille_block){
-    void * buddy = (void *)((uintptr_t) ptr ^ (1 << taille_block)); //On récupère la valeur possible du buddy
+    void * buddy = (void *)((uintptr_t) ptr ^ (1 << taille_block)); //On récupère l'adresse du buddy
+
     // On réaliste le parcours de la liste 
     void * traceur = arena.TZL[taille_block];
     void * sent = &traceur;
     while(traceur != NULL){
-        if(*(void **)traceur == buddy){ //On  trouve le buddy
-            *(void **)traceur = *(void**)buddy; //On enlève buddy de la liste
+        void ** suiv_traceur=traceur;
+        if(*suiv_traceur == buddy){ //On  trouve le buddy
+            *suiv_traceur = *(void**)buddy; //On enlève buddy de la liste et on fait pointer vers le suivant de buddy
             if(ptr > buddy){
                 ptr = buddy; // On remet les blocs dans l'ordre
             }
             return remonter_buddy(ptr, taille_block + 1);//On fusionne les blocs et on recherche le prochain buddy
         }
-        traceur = *(void **) traceur;//On passe au suivant
+        traceur = *suiv_traceur;//On passe au suivant
     }
     traceur = sent; //On replace le traceur au début de la liste
     //On supprime de la liste des blocks de taille donné le pointeur initiale pour libérer la mémoire.
