@@ -15,12 +15,13 @@ unsigned long knuth_mmix_one_round(unsigned long in)
     return in * 6364136223846793005UL % 1442695040888963407UL;
 }
 
-/* Fonction permettant d'écrire le marquage dans les 16 premiers et les 16 derniers octets du bloc pointé par ptr et
-d’une longueur de size octets. Elle renvoie l’adresse de la zone utilisable par l’utilisateur,
-16 octets après ptr. */
 
-void *mark_memarea_and_get_user_ptr(void *ptr, unsigned long size, MemKind k)
-{
+
+void *mark_memarea_and_get_user_ptr(void *ptr, unsigned long size, MemKind k){
+    /* Fonction permettant d'écrire le marquage dans les 16 premiers et les 16 derniers octets du bloc pointé par ptr et
+    d’une longueur de size octets. Elle renvoie l’adresse de la zone utilisable par l’utilisateur,
+    16 octets après ptr. */
+
     unsigned long mark=knuth_mmix_one_round( (unsigned long)ptr); // On crée et on stock le nombre magique en castant le pointeur
     unsigned long magic = (mark & ~(0b11UL)) | k; //On défini les 2 derniers bits de magic grâce au Memkind
 
@@ -34,15 +35,15 @@ void *mark_memarea_and_get_user_ptr(void *ptr, unsigned long size, MemKind k)
     return (void *)(ptr +16);
 }
 
-/* 
-Ce programme permet de lire le marquage avant ptr, puis on renvoie les valeurs lues dans une structure alloc.
-On vérifie au fur et à mesure la cohérence des données des marques pour ne pas se retrouver avec une allocation 
-bugué.
-*/
+
 
 Alloc
-mark_check_and_get_alloc(void *ptr)
-{
+mark_check_and_get_alloc(void *ptr){
+    /* 
+    Ce programme permet de lire le marquage avant ptr, puis on renvoie les valeurs lues dans une structure alloc.
+    On vérifie au fur et à mesure la cohérence des données des marques pour ne pas se retrouver avec une allocation 
+    buguée.*/
+
     /*On récupère les données des marques en respectant l'arithmétique des pointeurs*/
     unsigned long taille1 = *(unsigned  long *)(ptr -16);
     unsigned long magic1 = *(unsigned  long *)(ptr -8);
